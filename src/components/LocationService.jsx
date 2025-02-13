@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import L from "leaflet"
+import axios from "axios"
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -46,6 +47,11 @@ const LocationService = () => {
   const [result, setResult] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [defaultCenter, setDefaultCenter] = useState([6.5244, 3.3792]) // Lagos coordinates
+  const [startAddress, setStartAddress] = useState("")
+  const [endAddress, setEndAddress] = useState("")
+  const [userName, setUserName] = useState("")
+  const [userEmail, setUserEmail] = useState("")
+  const [isSUV, setIsSUV] = useState(false)
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -66,28 +72,61 @@ const LocationService = () => {
     }
   }, [])
 
+  const handleAddressSearch = async (address, setPosition) => {
+    try {
+      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyALGmIoYG48UGPOdzglzaq_gL0epSLnlgc`)
+      const { results } = response.data
+      if (results.length > 0) {
+        const { lat, lng } = results[0].geometry.location
+        setPosition({ lat, lng })
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!startPosition || !endPosition || !serviceType) {
+    if (!startPosition || !endPosition || !serviceType || !userName || !userEmail) {
       alert("Please fill in all fields")
       return
     }
 
     setIsLoading(true)
-    // Simulating API call
-    setTimeout(() => {
-      setResult({
-        price: "$50",
-        time: "30 minutes",
-        paymentLink: "https://example.com/payment",
-      })
+
+    const payload = {
+      dropoff_longitude: endPosition.lng.toString(),
+      dropoff_latitude: endPosition.lat.toString(),
+      pickup_latitude: startPosition.lat.toString(),
+      pickup_longitude: startPosition.lng.toString(),
+      is_SUV: isSUV,
+      user_name: userName,
+      user_email: userEmail,
+    }
+
+    try {
+      const response = await axios.post(
+        "https://internal-backend-rdhj.onrender.com/admin/offlineOrderDetails",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiOWZjYjIwNzItMzJiNS00ZjgzLTllNjMtMTMwMTExYzVlMWQyIiwibmFtZSI6IkVyaWMgQWxmcmVkIiwiY291bnRyeSI6Ik5pZ2VyaWEiLCJwaG9uZSI6IjA3MDEwMzYzNDI0IiwiZW1haWwiOiJhbGZyZWRlcmljMzcxQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJEdrYjJhNlNNYlhvaExLN2k0T2plenVuaS9RLmQ4YlAwYW9vMVZYWHhXYXpydnB5QmQyRWZxIiwidHJhbnNhY3Rpb25fcGluIjpudWxsLCJwcm9maWxlX3BpY3R1cmUiOm51bGwsImlzX3ZlcmlmaWVkIjp0cnVlLCJpc19vbmxpbmUiOmZhbHNlLCJmY21Ub2tlbiI6bnVsbCwibG9uZ2l0dWRlIjpudWxsLCJsYXRpdHVkZSI6bnVsbCwicmVmcmVzaFRva2VuIjoiJDJhJDEwJHJOaDZmVUdFdzBaRVRJbkRwOGNVQS5HMEM3dFZ6dFNaT1FLRWRZajNvMnM3TEtweERNNUpTIiwidXNlclR5cGUiOiJBRE1JTiIsImNyZWF0ZWRfYXQiOiIyMDI1LTAyLTA0VDEyOjEyOjEyLjE0MVoiLCJ1cGRhdGVkX2F0IjoiMjAyNS0wMi0wNlQxOToyODo1Ny40ODlaIiwidXNlcl9hY2NvdW50IjpudWxsLCJ2ZWhpY2xlX2RldGFpbHMiOltdfSwic3ViIjoiOWZjYjIwNzItMzJiNS00ZjgzLTllNjMtMTMwMTExYzVlMWQyIiwiaWF0IjoxNzM4OTI1ODkyLCJleHAiOjE3MzkwMTIyOTJ9.5KeYQLbUDNGUAQj4ajxiD7M7PfMzAKvWuO2BzIDIM2E`,
+            "x-resqx-key": "OGCALMDOWNLETMETHROUGH",
+          },
+        },
+      )
+
+      setResult(response.data.data)
+    } catch (error) {
+      console.error("Error submitting form:", error)
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-[#3B3835] p-8 md:p-16 text-white overflow-x-hidden">
-      <h1 className="text-4xl md:text-5xl lg:text-6xl text-center font-bold mb-8 leading-tight animate-fade-in-down">
+    <div className="min-h-screen bg-[#fff] p-8 md:p-16 text-white overflow-x-hidden">
+      <h1 className="text-4xl md:text-5xl text-black lg:text-6xl text-center font-bold mb-8 leading-tight animate-fade-in-down">
         ResQ-X Service Request
       </h1>
       <div className="max-w-4xl mx-auto bg-[#332414] p-6 md:p-8 rounded-lg shadow-lg animate-fade-in-up">
@@ -95,6 +134,14 @@ const LocationService = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-sm font-medium mb-2">Start Location</label>
+              <input
+                type="text"
+                value={startAddress}
+                onChange={(e) => setStartAddress(e.target.value)}
+                onBlur={() => handleAddressSearch(startAddress, setStartPosition)}
+                placeholder="Enter start address"
+                className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF8500] transition-all duration-300 ease-in-out"
+              />
               <MapComponent position={startPosition} setPosition={setStartPosition} defaultCenter={defaultCenter} />
               {startPosition && (
                 <p className="text-sm text-[#CCC8C4]">
@@ -104,6 +151,14 @@ const LocationService = () => {
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium mb-2">End Location</label>
+              <input
+                type="text"
+                value={endAddress}
+                onChange={(e) => setEndAddress(e.target.value)}
+                onBlur={() => handleAddressSearch(endAddress, setEndPosition)}
+                placeholder="Enter end address"
+                className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF8500] transition-all duration-300 ease-in-out"
+              />
               <MapComponent position={endPosition} setPosition={setEndPosition} defaultCenter={defaultCenter} />
               {endPosition && (
                 <p className="text-sm text-[#CCC8C4]">
@@ -123,6 +178,35 @@ const LocationService = () => {
               <option value="TOW_TRUCK">Tow Truck</option>
               <option value="FUEL_DELIVERY">Fuel Delivery</option>
             </select>
+          </div>
+          <div className="animate-fade-in">
+            <label className="block text-sm font-medium mb-2">User Name</label>
+            <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF8500] transition-all duration-300 ease-in-out"
+            />
+          </div>
+          <div className="animate-fade-in">
+            <label className="block text-sm font-medium mb-2">User Email</label>
+            <input
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF8500] transition-all duration-300 ease-in-out"
+            />
+          </div>
+          <div className="animate-fade-in">
+            <label className="block text-sm font-medium mb-2">Is SUV?</label>
+            <input
+              type="checkbox"
+              checked={isSUV}
+              onChange={(e) => setIsSUV(e.target.checked)}
+              className="mr-2"
+            />
           </div>
           <button
             type="submit"
@@ -155,13 +239,16 @@ const LocationService = () => {
           <div className="mt-8 p-6 bg-[#FAF8F5] text-[#3B3835] rounded-lg animate-fade-in">
             <h2 className="text-2xl font-bold mb-4">Service Details</h2>
             <p className="mb-2">
-              <strong>Price:</strong> {result.price}
+              <strong>Distance:</strong> {result.distance} km
             </p>
             <p className="mb-2">
-              <strong>Estimated Time:</strong> {result.time}
+              <strong>Estimated Time:</strong> {result.durationInMinutes} minutes
+            </p>
+            <p className="mb-2">
+              <strong>Total Price:</strong> ₦{result.total_price}
             </p>
             <a
-              href={result.paymentLink}
+              href={result.paymentDetails.data.authorization_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block mt-4 bg-[#FF8500] text-white py-2 px-4 rounded-md hover:bg-[#FF8500]/90 transition-all duration-300 ease-in-out transform hover:scale-105"
@@ -176,4 +263,3 @@ const LocationService = () => {
 }
 
 export default LocationService
-
