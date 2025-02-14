@@ -139,7 +139,6 @@ const LocationService = () => {
       is_SUV: isSUV,
       user_name: userName,
       user_email: userEmail,
-      service_type: serviceType === "TOW_TRUCK" ? "23dbe27f-a978-4589-a67e-0cbaf534ec8f" : "another-uuid-if-needed"
     }
 
     try {
