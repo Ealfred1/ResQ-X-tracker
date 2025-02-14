@@ -99,7 +99,7 @@ const LocationService = () => {
   // Load Google Maps script
   useEffect(() => {
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyALGmIoYG48UGPOdzglzaq_gL0epSLnlgc&libraries=places`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`
     script.async = true
     script.onload = () => console.log('Google Maps loaded')
     document.head.appendChild(script)
@@ -181,12 +181,12 @@ const LocationService = () => {
 
     try {
       const response = await axios.post(
-        'https://internal-backend-rdhj.onrender.com/admin/offlineOrderDetails',
+        `${import.meta.env.VITE_BACKEND_API_URL}/admin/offlineOrderDetails`,
         payload,
         {
           headers: {
-            Authorization: `Bearer eyJhbGci...`,
-            'x-resqx-key': 'OGCALMDOWNLETMETHROUGH'
+            Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
+            'x-resqx-key': import.meta.env.VITE_RESQX_KEY
           }
         }
       )
