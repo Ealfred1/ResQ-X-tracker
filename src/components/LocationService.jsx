@@ -47,7 +47,6 @@ const MapComponent = ({ position, setPosition, defaultCenter }) => {
 const LocationService = () => {
   const [startPosition, setStartPosition] = useState(null)
   const [endPosition, setEndPosition] = useState(null)
-  const [serviceType, setServiceType] = useState("")
   const [result, setResult] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [defaultCenter, setDefaultCenter] = useState([6.5244, 3.3792])
@@ -124,7 +123,7 @@ const LocationService = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!startPosition || !endPosition || !serviceType || !userName || !userEmail) {
+    if (!startPosition || !endPosition || !userName || !userEmail) {
       alert('Please fill in all required fields')
       return
     }
@@ -147,7 +146,7 @@ const LocationService = () => {
         payload,
         {
           headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiOWZjYjIwNzItMzJiNS00ZjgzLTllNjMtMTMwMTExYzVlMWQyIiwibmFtZSI6IkVyaWMgQWxmcmVkIiwiY291bnRyeSI6Ik5pZ2VyaWEiLCJwaG9uZSI6IjA3MDEwMzYzNDI0IiwiZW1haWwiOiJhbGZyZWRlcmljMzcxQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJEdrYjJhNlNNYlhvaExLN2k0T2plenVuaS9RLmQ4YlAwYW9vMVZYWHhXYXpydnB5QmQyRWZxIiwidHJhbnNhY3Rpb25fcGluIjpudWxsLCJwcm9maWxlX3BpY3R1cmUiOm51bGwsImlzX3ZlcmlmaWVkIjp0cnVlLCJpc19vbmxpbmUiOmZhbHNlLCJmY21Ub2tlbiI6bnVsbCwibG9uZ2l0dWRlIjpudWxsLCJsYXRpdHVkZSI6bnVsbCwicmVmcmVzaFRva2VuIjoiJDJhJDEwJHJOaDZmVUdFdzBaRVRJbkRwOGNVQS5HMEM3dFZ6dFNaT1FLRWRZajNvMnM3TEtweERNNUpTIiwidXNlclR5cGUiOiJBRE1JTiIsImNyZWF0ZWRfYXQiOiIyMDI1LTAyLTA0VDEyOjEyOjEyLjE0MVoiLCJ1cGRhdGVkX2F0IjoiMjAyNS0wMi0wNlQxOToyODo1Ny40ODlaIiwidXNlcl9hY2NvdW50IjpudWxsLCJ2ZWhpY2xlX2RldGFpbHMiOltdfSwic3ViIjoiOWZjYjIwNzItMzJiNS00ZjgzLTllNjMtMTMwMTExYzVlMWQyIiwiaWF0IjoxNzM4OTI1ODkyLCJleHAiOjE3MzkwMTIyOTJ9.5KeYQLbUDNGUAQj4ajxiD7M7PfMzAKvWuO2BzIDIM2E`,
+            Authorization: `Bearer eyJhbGci...`,
             'x-resqx-key': 'OGCALMDOWNLETMETHROUGH'
           }
         }
@@ -172,7 +171,7 @@ const LocationService = () => {
       <div className="max-w-4xl mx-auto bg-[#332414] p-6 md:p-8 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Start Location Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative">
             <label className="block text-sm font-medium text-white">Start Location</label>
             <div className="relative">
               <input
@@ -186,7 +185,7 @@ const LocationService = () => {
                 className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md"
               />
               {suggestions.start.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-y-auto">
                   {suggestions.start.map((item, index) => (
                     <div
                       key={index}
@@ -199,7 +198,9 @@ const LocationService = () => {
                 </div>
               )}
             </div>
-            <MapComponent position={startPosition} setPosition={setStartPosition} defaultCenter={defaultCenter} />
+            <div className="relative z-10">
+              <MapComponent position={startPosition} setPosition={setStartPosition} defaultCenter={defaultCenter} />
+            </div>
             {startPosition && (
               <p className="text-sm text-gray-300">
                 Coordinates: {startPosition.lat.toFixed(6)}, {startPosition.lng.toFixed(6)}
@@ -208,7 +209,7 @@ const LocationService = () => {
           </div>
 
           {/* End Location Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative">
             <label className="block text-sm font-medium text-white">End Location</label>
             <div className="relative">
               <input
@@ -222,7 +223,7 @@ const LocationService = () => {
                 className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md"
               />
               {suggestions.end.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-y-auto">
                   {suggestions.end.map((item, index) => (
                     <div
                       key={index}
@@ -235,26 +236,14 @@ const LocationService = () => {
                 </div>
               )}
             </div>
-            <MapComponent position={endPosition} setPosition={setEndPosition} defaultCenter={defaultCenter} />
+            <div className="relative z-10">
+              <MapComponent position={endPosition} setPosition={setEndPosition} defaultCenter={defaultCenter} />
+            </div>
             {endPosition && (
               <p className="text-sm text-gray-300">
                 Coordinates: {endPosition.lat.toFixed(6)}, {endPosition.lng.toFixed(6)}
               </p>
             )}
-          </div>
-
-          {/* Service Type */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-white">Service Type</label>
-            <select
-              value={serviceType}
-              onChange={(e) => setServiceType(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF8F5] text-[#3B3835] rounded-md"
-            >
-              <option value="">Select Service Type</option>
-              <option value="TOW_TRUCK">Tow Truck</option>
-              <option value="FUEL_DELIVERY">Fuel Delivery</option>
-            </select>
           </div>
 
           {/* User Information */}
