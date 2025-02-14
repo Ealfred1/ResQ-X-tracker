@@ -43,6 +43,44 @@ const MapComponent = ({ position, setPosition, defaultCenter }) => {
   )
 }
 
+// Payment Modal Component
+const PaymentModal = ({ result, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-4 text-[#3B3835]">Service Details</h2>
+        <div className="space-y-3">
+          <p className="text-[#3B3835]">
+            <span className="font-semibold">Distance:</span> {result.distance} km
+          </p>
+          <p className="text-[#3B3835]">
+            <span className="font-semibold">Estimated Time:</span> {result.durationInMinutes} minutes
+          </p>
+          <p className="text-[#3B3835]">
+            <span className="font-semibold">Total Price:</span> ₦{result.total_price?.toLocaleString()}
+          </p>
+          {result.paymentDetails?.data?.authorization_url && (
+            <a
+              href={result.paymentDetails.data.authorization_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-4 bg-[#FF8500] text-white py-2 px-4 rounded-md hover:bg-[#FF8500]/90 transition-colors"
+            >
+              Proceed to Payment
+            </a>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="mt-6 text-sm text-gray-600 hover:text-gray-900"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Main component
 const LocationService = () => {
   const [startPosition, setStartPosition] = useState(null)
@@ -56,6 +94,7 @@ const LocationService = () => {
   const [userEmail, setUserEmail] = useState("")
   const [isSUV, setIsSUV] = useState(false)
   const [suggestions, setSuggestions] = useState({ start: [], end: [] })
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   // Load Google Maps script
   useEffect(() => {
@@ -154,6 +193,7 @@ const LocationService = () => {
 
       if (response.data.success) {
         setResult(response.data.data)
+        setShowPaymentModal(true)
       }
     } catch (error) {
       console.error('API Error:', error)
@@ -304,32 +344,12 @@ const LocationService = () => {
           </button>
         </form>
 
-        {/* Results Display */}
-        {result && (
-          <div className="mt-8 p-6 bg-[#FAF8F5] rounded-lg animate-fade-in">
-            <h2 className="text-2xl font-bold mb-4 text-[#3B3835]">Service Details</h2>
-            <div className="space-y-3">
-              <p className="text-[#3B3835]">
-                <span className="font-semibold">Distance:</span> {result.distance} km
-              </p>
-              <p className="text-[#3B3835]">
-                <span className="font-semibold">Estimated Time:</span> {result.durationInMinutes} minutes
-              </p>
-              <p className="text-[#3B3835]">
-                <span className="font-semibold">Total Price:</span> ₦{result.total_price?.toLocaleString()}
-              </p>
-              {result.paymentDetails?.data?.authorization_url && (
-                <a
-                  href={result.paymentDetails.data.authorization_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-4 bg-[#FF8500] text-white py-2 px-4 rounded-md hover:bg-[#FF8500]/90 transition-colors"
-                >
-                  Proceed to Payment
-                </a>
-              )}
-            </div>
-          </div>
+        {/* Payment Modal */}
+        {showPaymentModal && result && (
+          <PaymentModal
+            result={result}
+            onClose={() => setShowPaymentModal(false)}
+          />
         )}
       </div>
     </div>
