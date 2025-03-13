@@ -230,6 +230,7 @@ const LocationService = () => {
       pickup_latitude: startPosition.lat.toString(),
       pickup_longitude: startPosition.lng.toString(),
       is_SUV: isSUV,
+      order_type: "TOW_TRUCK",
       user_name: userName,
       user_email: userEmail,
     }
